@@ -27,6 +27,11 @@ type Expense struct {
 const filename = "expenses.json"
 var scanner = bufio.NewScanner(os.Stdin)
 
+func getString() string {
+	scanner.Scan()
+	return scanner.Text()
+}
+
 func checkError(e error) {
 	if e != nil {
 		panic(e)
@@ -82,6 +87,15 @@ func generateId(exp []Expense) string {
 	return fmt.Sprintf("T%04d", intId + 1)
 }
 
+func searchId(target string, exp []Expense) int {
+	for idx, val := range exp {
+		if val.Id == target {
+			return idx
+		}
+	}
+	return -1
+}
+
 func printExp(exp Expense) {
 	section()
 	fmt.Println("ID: " + exp.Id)
@@ -130,15 +144,14 @@ func add() {
 	ex.Id = generateId(exp)
 
 	fmt.Println("Input expense description:")
-	scanner.Scan()
-	ex.Description = scanner.Text()
+	ex.Description = getString()
 
 	_, ex.Category = showMenu("Select Expense Category", categoryMenu())
 
 	fmt.Println("Input expense amount:")
 	for true {
-		scanner.Scan()
-		isValid, val := parseMoney(scanner.Text())
+		strAmount := getString()
+		isValid, val := parseMoney(strAmount)
 
 		if isValid {
 			ex.Amount = val
@@ -156,7 +169,22 @@ func add() {
 }
 
 func update() {
-	// TODO: search id, show if found, edit desc/amount/category, save
+	exp := load()
+	fmt.Println("Enter expense ID to change:")
+	id := getString()
+
+	idx := searchId(id, exp)
+
+	if idx < 0 {
+		fmt.Println("ID not found...")
+		//TODO: enter ID again
+	} else {
+		section()
+		printExp(exp[idx])
+		section()
+
+	}
+
 }
 
 func delete() {
